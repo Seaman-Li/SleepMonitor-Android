@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ECGActivity">
+    android:orientation="vertical"
+    android:padding="16dp">
 
+    <!-- Header layout containing device info -->
     <LinearLayout
         android:id="@+id/ecgViewHeading"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:weightSum="3">
 
         <TextView
             android:id="@+id/deviceId"
-            android:layout_width="131dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:textAlignment="center"
             android:textColor="@android:color/black"
             android:textSize="20sp"
@@ -26,8 +27,9 @@
 
         <TextView
             android:id="@+id/battery_level"
-            android:layout_width="175dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:textAlignment="center"
             android:textColor="@android:color/black"
             android:textSize="20sp"
@@ -35,75 +37,61 @@
 
         <TextView
             android:id="@+id/fw_version"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:textAlignment="center"
             android:textColor="@android:color/black"
             android:textSize="20sp"
             tools:text="3.1.1" />
     </LinearLayout>
 
-    <com.androidplot.xy.XYPlot
-        android:id="@+id/plot"
-        style="@style/FullScreenGraph"
-        android:layout_width="fill_parent"
-        android:layout_height="150dp"
-        android:layout_marginBottom="264dp"
-        app:graphBackgroundColor="@color/colorBackground"
-        app:graphMarginBottom="12dp"
-        app:graphMarginLeft="16dp"
-        app:graphMarginTop="12dp"
-        app:gridBackgroundColor="@color/white"
-        app:gridInsetLeft="25dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:lineLabelInsetLeft="12dp"
-        app:lineLabels="left"
-        app:rangeTitle=""
-        app:rangeTitleTextColor="@android:color/black"
-        app:rangeTitleTextSize="12dp"
-        app:renderMode="use_background_thread"
-        app:title="" />
-
-    <com.androidplot.xy.XYPlot
-        android:id="@+id/ecg_plot"
-        style="@style/FullScreenGraph"
-        android:layout_width="fill_parent"
-        android:layout_height="100dp"
-        android:layout_marginTop="4dp"
-        app:graphBackgroundColor="@color/colorBackground"
-        app:graphMarginBottom="12dp"
-        app:graphMarginLeft="16dp"
-        app:graphMarginTop="12dp"
-        app:gridBackgroundColor="@color/white"
-        app:gridInsetLeft="25dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/plot"
-        app:lineLabelInsetLeft="12dp"
-        app:lineLabels="left"
-        app:rangeTitle=""
-        app:rangeTitleTextColor="@android:color/black"
-        app:rangeTitleTextSize="12dp"
-        app:renderMode="use_background_thread"
-        app:title="" />
-
+    <!-- Heart rate text in the center -->
     <TextView
         android:id="@+id/hr"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="108dp"
+        android:layout_marginTop="16dp"
         android:textAlignment="center"
         android:textColor="#F1789D"
-        android:textSize="30sp"
-        app:layout_constraintTop_toBottomOf="@+id/ecgViewHeading"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="0dp"
-        tools:text="100" />
+        android:textSize="40sp"
+        tools:text="78" />
 
+    <!-- PPG plot -->
+    <com.androidplot.xy.XYPlot
+        android:id="@+id/plot"
+        style="@style/FullScreenGraph"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:layout_weight="1"
+        android:layout_marginTop="50dp"
+        android:layout_marginBottom="8dp"
+        app:graphBackgroundColor="@color/colorBackground"
+        app:gridBackgroundColor="@color/white"
+        app:lineLabels="left"
+        app:lineLabelInsetLeft="32dp"
+        app:rangeTitleTextColor="@android:color/black"
+        app:rangeTitleTextSize="10dp"
+        app:renderMode="use_background_thread" />
+
+    <!-- ECG plot -->
+    <com.androidplot.xy.XYPlot
+        android:id="@+id/ecg_plot"
+        style="@style/FullScreenGraph"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_weight="1"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp"
+        app:graphBackgroundColor="@color/white"
+        app:gridBackgroundColor="@color/white"
+        app:lineLabels="left"
+        app:lineLabelInsetLeft="32dp"
+        app:rangeTitleTextColor="@android:color/black"
+        app:rangeTitleTextSize="10dp"
+        app:renderMode="use_background_thread" />
+
+    <!-- RR interval text below the plots -->
     <TextView
         android:id="@+id/rr"
         android:layout_width="match_parent"
@@ -111,21 +99,5 @@
         android:textAlignment="center"
         android:textColor="@android:color/holo_blue_dark"
         android:textSize="16sp"
-        app:layout_constraintTop_toBottomOf="@+id/hr"
-        tools:layout_editor_absoluteX="0dp"
         tools:text="(1002ms, 1009ms)" />
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/bottomNavi"
-        app:itemIconTint="@color/bottom_nav_colors"
-        app:itemTextColor="@color/bottom_nav_colors"
-        app:labelVisibilityMode="labeled"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/bottom_navigation_menu" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

@@ -1,12 +1,16 @@
 package com.venavitals.ble_ptt
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
+import android.widget.FrameLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.androidplot.xy.BoundaryMode
+import com.androidplot.xy.LineAndPointFormatter
 import com.androidplot.xy.StepMode
 import com.androidplot.xy.XYPlot
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -54,9 +58,28 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
     private var ecgSR: Int = 250
     private var ppgSR: Int = 55  //28Hz, 44Hz, 55Hz, 135Hz, 176Hz
 
+
+    //设置画图颜色
+    private fun setupPlot() {
+        // 创建一个 LineAndPointFormatter 并设置线条颜色
+        val ppgFormatter = LineAndPointFormatter(Color.parseColor("#F1789D"), null, null, null)
+        val ecgFormatter = LineAndPointFormatter(Color.parseColor("#F1789D"), null, null, null)
+
+        // 应用格式化器到系列上
+        ppgPlot.addSeries(ppgPlotter.getSeries(), ppgFormatter)
+        ecgPlot.addSeries(ecgPlotter.getSeries(), ecgFormatter)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_ecg)
+//        setContentView(R.layout.activity_ecg)
+
+        setContentView(R.layout.basic_layout) // 加载包含TopBar和BottomNavigation的基础布局
+
+// 加载 ECGActivity 的内容布局到 content_frame 中
+        val contentFrame: FrameLayout = findViewById(R.id.content_frame)
+        LayoutInflater.from(this).inflate(R.layout.activity_ecg, contentFrame, true)
+
         // 尝试从 Intent 获取 deviceId
         ppgDeviceId = intent.getStringExtra("id").toString()
         Log.d(TAG, "ECGActivity received deviceId: $ppgDeviceId")
@@ -70,6 +93,8 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
             finish()
             return
         }
+
+
         textViewHR = findViewById(R.id.hr)
         textViewRR = findViewById(R.id.rr)
         textViewDeviceId = findViewById(R.id.deviceId)
@@ -77,7 +102,6 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
         textViewFwVersion = findViewById(R.id.fw_version)
         ppgPlot = findViewById(R.id.plot)
         ecgPlot = findViewById(R.id.ecg_plot)
-
 
 
 
@@ -172,30 +196,10 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
         ecgPlot.setDomainBoundaries(0, 200, BoundaryMode.AUTO)
         ecgPlot.linesPerRangeLabel = 2
 
-//        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
-//        bottomNavigationView.selectedItemId = R.id.navigation_chart
-//        bottomNavigationView.setOnItemSelectedListener { item ->
-//            when (item.itemId) {
-//                R.id.navigation_connect -> {
-//                    // Navigate to MainActivity
-//                    startActivity(Intent(this, MainActivity::class.java))
-//                    true
-//                }
-//                R.id.navigation_chart -> {
-//                    // Stay in ECGActivity
-//                    true
-//                }
-//                R.id.navigation_user -> {
-//                    // Placeholder for future user activity
-//                    true
-//                }
-//                R.id.navigation_settings -> {
-//                    // Placeholder for future settings activity
-//                    true
-//                }
-//                else -> false
-//            }
-//        }
+        //设置画图颜色
+        setupPlot()
+
+
 
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNavigationView.selectedItemId = R.id.navigation_chart  // 设置选中的项为 chart
@@ -207,6 +211,7 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
         }
 
     }
+
 
     public override fun onDestroy() {
         super.onDestroy()
