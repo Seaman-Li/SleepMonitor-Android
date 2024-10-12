@@ -2,9 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Polar SDK needs Bluetooth scan permission to search for BLE devices.-->
-    <uses-permission
-        android:name="android.permission.BLUETOOTH_SCAN"
-        android:usesPermissionFlags="neverForLocation" />
+<!--    <uses-permission-->
+<!--        android:name="android.permission.BLUETOOTH_SCAN"-->
+<!--        android:usesPermissionFlags="neverForLocation" />-->
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
 
     <!-- Polar SDK needs Bluetooth connect permission to connect for found BLE devices.-->
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
@@ -32,6 +33,8 @@
     <uses-permission
         android:name="android.permission.ACCESS_COARSE_LOCATION"
         android:maxSdkVersion="30" />
+
+
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -68,5 +71,7 @@
             android:label="@string/hr_name"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait" />
+
+        <activity android:name=".DeviceListActivity" />
     </application>
 </manifest>

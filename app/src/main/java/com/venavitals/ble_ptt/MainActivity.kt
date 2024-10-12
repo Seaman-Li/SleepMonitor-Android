@@ -3,6 +3,7 @@ package com.venavitals.ble_ptt
 import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.content.DialogInterface
 import android.content.Intent
@@ -50,6 +51,24 @@ class MainActivity : AppCompatActivity() {
     }
     private var deviceId: String? = null
 
+    // 注册 ActivityResultLauncher 用于启动 DeviceListActivity 并接收结果
+    private val selectDeviceLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK && result.data != null) {
+            val deviceAddress = result.data?.getStringExtra(BluetoothDevice.EXTRA_DEVICE)
+            if (deviceAddress != null) {
+                showToast(getString(R.string.connecting) + " " + deviceAddress)
+
+                val intent = Intent(this, ECGActivity::class.java)
+                intent.putExtra("id", deviceAddress)
+                Log.d(TAG, "Navigating to ECGActivity with deviceId: $deviceAddress")
+
+                startActivity(intent)
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -84,31 +103,7 @@ class MainActivity : AppCompatActivity() {
         ppgEcgConnectButton.setOnClickListener { onClickConnectPpgEcg(it) }
 //        hrConnectButton.setOnClickListener { onClickConnectHr(it) }
 
-        // 底部导航栏点击事件
-//        val bottomNavView: BottomNavigationView = findViewById(R.id.bottom_navigation)
-//        bottomNavView.setOnNavigationItemSelectedListener { item ->
-//            when (item.itemId) {
-//                R.id.navigation_connect -> {
-//                    val intent = Intent(this, MainActivity::class.java)
-//                    startActivity(intent)
-//                    true
-//                }
-//                R.id.navigation_chart -> {
-//                    val intent = Intent(this, ECGActivity::class.java)
-//                    startActivity(intent)
-//                    true
-//                }
-//                R.id.navigation_user -> {
-//
-//                    true
-//                }
-//                R.id.navigation_settings -> {
-//
-//                    true
-//                }
-//                else -> false
-//            }
-//        }
+
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNavigationView.selectedItemId = R.id.navigation_connect  // 设置选中的项为 connect
 
@@ -122,18 +117,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onClickConnectPpgEcg(view: View) {
-        checkBT()
-        if (deviceId == null || deviceId == "") {
-            deviceId = sharedPreferences.getString(SHARED_PREFS_KEY, "")
-            showDialog(view)
-        } else {
-            showToast(getString(R.string.connecting) + " " + deviceId)
-            val intent = Intent(this, ECGActivity::class.java)
-            intent.putExtra("id", deviceId)
-            Log.d(TAG, "Navigating to ECGActivity with deviceId: $deviceId")
+        checkBT()  // 确保蓝牙已启用
 
-            startActivity(intent)
-        }
+        // 启动 DeviceListActivity 以扫描并选择设备
+        val intent = Intent(this, DeviceListActivity::class.java)
+        selectDeviceLauncher.launch(intent)  // 使用 ActivityResultLauncher 启动活动
     }
 
     private fun onClickConnectHr(view: View) {
