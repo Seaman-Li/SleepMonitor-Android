@@ -224,8 +224,8 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
         val path = getExternalFilesDir(null).toString();
 //        path = Environment.getExternalStorageDirectory().toString();
         Log.d(TAG, "file save path: $path");
-        Utils.saveSamples(ecgSamples,path,"ecg_samples.txt");
-        Utils.saveSamples(ppgSamples,path,"ppg_samples.txt");
+        Utils.saveSamples(ecgSamples,path,"ecg_samples"+System.currentTimeMillis()+".txt");
+        Utils.saveSamples(ppgSamples,path,"ppg_samples"+System.currentTimeMillis()+".txt");
     }
 
 
@@ -282,12 +282,12 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
             val buffer: DoubleArray = if(ppgBufferSelector)ppgBufferA else ppgBufferB
 
             buffer[ppgBufferIdx++]=value;
-            if(ppgBufferIdx>=buffer.size){
+            if(ppgBufferIdx>=buffer.size && ppgBufferIdx%ppgSR==0){
                 ppgBufferSelector=!ppgBufferSelector;
                 ppgBufferIdx=0;
 
-                val res = ButterworthBandpassFilter.ppg55hzBandpassFilter(buffer);
-                ppgPlotter.sendSamples(res);
+//                val res = ButterworthBandpassFilter.ppg55hzBandpassFilter(buffer);
+                ppgPlotter.sendSamples(buffer);
             }
         }
 
@@ -298,15 +298,17 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
     private fun plotECG(num: Double) {
         if(isSynchronized){
             val buffer: DoubleArray = if(ecgBufferSelector)ecgBufferA else ecgBufferB
+//
+//            buffer[ecgBufferIdx++]=num;
+//            if(ecgBufferIdx>=buffer.size){
+//                ecgBufferSelector=!ecgBufferSelector;
+//                ecgBufferIdx=0;
+//
+////                val res = ButterworthBandpassFilter.ecg250hzBandpassFilter(buffer);
+//                ecgPlotter.sendSamples(buffer);
+//            }
 
-            buffer[ecgBufferIdx++]=num;
-            if(ecgBufferIdx>=buffer.size){
-                ecgBufferSelector=!ecgBufferSelector;
-                ecgBufferIdx=0;
-
-                val res = ButterworthBandpassFilter.ecg250hzBandpassFilter(buffer);
-                ecgPlotter.sendSamples(res);
-            }
+            ecgPlotter.sendSingleSample(num);
             
             ecgSamples.add(num)
         }
