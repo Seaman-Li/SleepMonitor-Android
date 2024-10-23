@@ -23,23 +23,6 @@
             app:title="@string/app_name" />
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!--    <Button-->
-<!--        android:id="@+id/buttonConnectHr"-->
-<!--        style="@style/CustomButtonStyle"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_marginStart="64dp"-->
-<!--        android:layout_marginEnd="64dp"-->
-<!--        android:layout_marginBottom="220dp"-->
-<!--        android:background="@drawable/rounded_button"-->
-<!--        android:padding="8dp"-->
-<!--        android:text="@string/connectHr"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintHorizontal_bias="0.0"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/buttonConnectPpg"-->
-<!--        app:layout_constraintVertical_bias="1.0" />-->
 
     <Button
         android:id="@+id/buttonSetID"
@@ -65,16 +48,42 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="64dp"
-        android:layout_marginTop="92dp"
+        android:layout_marginTop="64dp"
         android:layout_marginEnd="64dp"
         android:background="@drawable/rounded_button"
         android:padding="8dp"
 
         android:text="@string/connectPpgEcg"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonSetID" />
+
+    <!-- 添加标题来表示已连接过的设备 -->
+    <TextView
+        android:id="@+id/previously_connected_devices_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Previously Connected Devices:"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonConnectPpg" />
+
+    <ListView
+        android:id="@+id/device_id_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="40dp"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonConnectPpg"
+        app:layout_constraintVertical_bias="1.0" />
+
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"

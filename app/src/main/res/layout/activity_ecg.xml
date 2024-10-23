@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/ECGActivity_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ECGActivity">
@@ -55,6 +56,30 @@
         tools:layout_editor_absoluteX="0dp"
         tools:text="" />
 
+    <TextView
+        android:id="@+id/hr"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="108dp"
+        android:textAlignment="center"
+        android:textColor="#F1789D"
+        android:textSize="30sp"
+        app:layout_constraintTop_toBottomOf="@+id/ecgViewHeading"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="0dp"
+        tools:text="100" />
+
+    <TextView
+        android:id="@+id/rr"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:textColor="@android:color/holo_blue_dark"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@+id/hr"
+        tools:layout_editor_absoluteX="0dp"
+        tools:text="(1002ms, 1009ms)" />
+
     <com.androidplot.xy.XYPlot
         android:id="@+id/plot"
         style="@style/FullScreenGraph"
@@ -105,29 +130,18 @@
         app:renderMode="use_background_thread"
         app:title="" />
 
-    <TextView
-        android:id="@+id/hr"
-        android:layout_width="match_parent"
+    <!-- Add a button for toggling full-screen mode -->
+    <Button
+        android:id="@+id/fullscreen_button"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="108dp"
-        android:textAlignment="center"
-        android:textColor="#F1789D"
-        android:textSize="30sp"
-        app:layout_constraintTop_toBottomOf="@+id/ecgViewHeading"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="0dp"
-        tools:text="100" />
+        android:text="Fullscreen"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/ecg_plot"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:padding="8dp"/>
 
-    <TextView
-        android:id="@+id/rr"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAlignment="center"
-        android:textColor="@android:color/holo_blue_dark"
-        android:textSize="16sp"
-        app:layout_constraintTop_toBottomOf="@+id/hr"
-        tools:layout_editor_absoluteX="0dp"
-        tools:text="(1002ms, 1009ms)" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"

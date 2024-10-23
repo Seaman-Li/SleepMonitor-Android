@@ -1,11 +1,15 @@
 package com.venavitals.ble_ptt
 
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.androidplot.xy.BoundaryMode
 import com.androidplot.xy.StepMode
 import com.androidplot.xy.XYPlot
@@ -31,7 +35,7 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
     companion object {
         private const val TAG = "ECGActivity"
     }
-
+    private var isFullScreen = false
     private lateinit var api: PolarBleApi
     private lateinit var textViewHR: TextView
     private lateinit var textViewRR: TextView
@@ -60,6 +64,8 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
     private var ppgSR: Int = 55  //28Hz, 44Hz, 55Hz, 135Hz, 176Hz
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_ecg)
         // 尝试从 Intent 获取 deviceId
@@ -83,6 +89,7 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
         textViewInfo = findViewById(R.id.info)
         ppgPlot = findViewById(R.id.plot)
         ecgPlot = findViewById(R.id.ecg_plot)
+        var fullScreenButton = findViewById<Button>(R.id.fullscreen_button)
 
 
 
@@ -181,30 +188,6 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
         ecgPlot.graph.setMargins(-1000f,0f,0f,0f)
 
 
-//        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
-//        bottomNavigationView.selectedItemId = R.id.navigation_chart
-//        bottomNavigationView.setOnItemSelectedListener { item ->
-//            when (item.itemId) {
-//                R.id.navigation_connect -> {
-//                    // Navigate to MainActivity
-//                    startActivity(Intent(this, MainActivity::class.java))
-//                    true
-//                }
-//                R.id.navigation_chart -> {
-//                    // Stay in ECGActivity
-//                    true
-//                }
-//                R.id.navigation_user -> {
-//                    // Placeholder for future user activity
-//                    true
-//                }
-//                R.id.navigation_settings -> {
-//                    // Placeholder for future settings activity
-//                    true
-//                }
-//                else -> false
-//            }
-//        }
 
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNavigationView.selectedItemId = R.id.navigation_chart  // 设置选中的项为 chart
@@ -212,8 +195,26 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
         val deviceId = intent.getStringExtra("id")
 
         bottomNavigationView.setOnItemSelectedListener { item ->
-            NavigationHelper.handleNavigation(this, item.itemId, deviceId)
+            NavigationHelper.handleNavigation(this, item.itemId)
         }
+
+
+        // 点击按钮切换全屏显示
+        fullScreenButton.setOnClickListener {
+            if (!isFullScreen) {
+                // 切换到横屏模式
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                enterFullScreenMode()
+                fullScreenButton.text = "Return"  // 修改按钮文本为"Return"
+            } else {
+                // 切换回竖屏模式
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                exitFullScreenMode()
+                fullScreenButton.text = "Fullscreen"  // 修改按钮文本回"Fullscreen"
+            }
+            isFullScreen = !isFullScreen
+        }
+
 
     }
 
@@ -401,14 +402,55 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
         }
 
     }
+    // 进入全屏模式，隐藏除图表外的所有控件
+// 进入全屏模式，隐藏除图表外的所有控件
+    private fun enterFullScreenMode() {
+        // 隐藏其他控件
+        findViewById<View>(R.id.ecgViewHeading).visibility = View.GONE
+        findViewById<View>(R.id.hr).visibility = View.GONE
+        findViewById<View>(R.id.rr).visibility = View.GONE
+        findViewById<View>(R.id.info).visibility = View.GONE
+        findViewById<View>(R.id.bottom_navigation).visibility = View.GONE
 
-//    override fun onResume() {
-//        super.onResume()
-//
-//        // 设置导航栏的选中状态为chart
-//        val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
-//        bottomNavigationView.selectedItemId = R.id.navigation_chart
-//    }
+        val ppgplot = findViewById<XYPlot>(R.id.plot)
+        val ecgPlot = findViewById<XYPlot>(R.id.ecg_plot)
+        val constraintLayout = findViewById<ConstraintLayout>(R.id.ECGActivity_layout) // 获取ConstraintLayout的ID
+        val containerHeight = constraintLayout.width // 获取父容器的高度
 
+        val plotParams = ppgplot.layoutParams as ConstraintLayout.LayoutParams
+        val ecgPlotParams = ecgPlot.layoutParams as ConstraintLayout.LayoutParams
+
+        plotParams.topToTop = ConstraintLayout.LayoutParams.PARENT_ID
+        plotParams.topMargin = 80 // 将顶部边距设置为80
+        // Allocate 60% of container height to the first plot and 40% to the second
+        plotParams.height = (containerHeight * 0.5).toInt()
+        ecgPlotParams.height = (containerHeight * 0.3).toInt()
+
+        ppgplot.layoutParams = plotParams
+        ecgPlot.layoutParams = ecgPlotParams
+    }
+
+
+    // 退出全屏模式，恢复控件的可见性
+    private fun exitFullScreenMode() {
+        // 恢复其他控件的可见性
+        findViewById<View>(R.id.ecgViewHeading).visibility = View.VISIBLE
+        findViewById<View>(R.id.hr).visibility = View.VISIBLE
+        findViewById<View>(R.id.rr).visibility = View.VISIBLE
+        findViewById<View>(R.id.info).visibility = View.VISIBLE
+        findViewById<View>(R.id.bottom_navigation).visibility = View.VISIBLE
+
+        // 恢复图表的高度
+        val plot = findViewById<XYPlot>(R.id.plot)
+        val ecgPlot = findViewById<XYPlot>(R.id.ecg_plot)
+        val plotParams = plot.layoutParams as ConstraintLayout.LayoutParams
+        val ecgPlotParams = ecgPlot.layoutParams as ConstraintLayout.LayoutParams
+
+        plotParams.height = 300  // 恢复为之前的高度
+        ecgPlotParams.height = 200  // 恢复为之前的高度
+
+        plot.layoutParams = plotParams
+        ecgPlot.layoutParams = ecgPlotParams
+    }
 
 }

@@ -61,6 +61,7 @@
             android:exported="false"
             android:label="@string/ecg_name"
             android:parentActivityName=".MainActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:screenOrientation="portrait" />
         <activity
             android:name=".HRActivity"
@@ -68,5 +69,10 @@
             android:label="@string/hr_name"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait" />
+
+        <activity android:name=".DeviceListActivity"
+            android:exported="false"
+            android:label="@string/hr_name"
+            android:parentActivityName=".MainActivity"/>
     </application>
 </manifest>

@@ -13,7 +13,7 @@ object NavigationHelper {
     fun handleNavigation(
         activity: AppCompatActivity,
         itemId: Int,
-        deviceId: String?
+//        deviceId: String?
     ): Boolean {
         return when (itemId) {
             R.id.navigation_connect -> {
@@ -25,18 +25,8 @@ object NavigationHelper {
                 true
             }
             R.id.navigation_chart -> {
-                if (deviceId.isNullOrEmpty()) {
                     showConnectDeviceDialog(activity)
                     false
-                } else {
-                    if (activity !is ECGActivity) {
-                        val intent = Intent(activity, ECGActivity::class.java)
-                        intent.putExtra("id", deviceId)
-                        activity.startActivity(intent)
-                        activity.finish()
-                    }
-                    true
-                }
             }
             else -> false
         }
