@@ -5,18 +5,12 @@ import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
-import android.text.InputType
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ListView
@@ -30,7 +24,6 @@ import androidx.core.content.ContextCompat
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.navigation.NavigationBarView
 import com.venavitals.ble_ptt.adapters.DeviceListAdapter
 import java.util.Locale
 
@@ -95,18 +88,16 @@ class MainActivity : AppCompatActivity() {
         sharedPreferences = getPreferences(MODE_PRIVATE)
         displayDeviceIds()
 
-        //配置AppBar
+        //set AppBar(top bar)
         val toolbar: MaterialToolbar = findViewById(R.id.topAppBar)
         setSupportActionBar(toolbar)
 
-        // 以下代码为可选，如果你未来需要处理导航点击事件
+        // 以下代码为可选，如果未来需要处理导航点击事件
         toolbar.setNavigationOnClickListener {
             // Handle navigation icon click event
         }
 
-
 //        deviceId = sharedPreferences.getString(SHARED_PREFS_KEY, "")
-
         val setIdButton: Button = findViewById(R.id.buttonSetID)
         val ppgEcgConnectButton: Button = findViewById(R.id.buttonConnectPpg)
 //        val hrConnectButton: Button = findViewById(R.id.buttonConnectHr)
@@ -119,12 +110,9 @@ class MainActivity : AppCompatActivity() {
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNavigationView.selectedItemId = R.id.navigation_connect  // 设置选中的项为 connect
 
-
         bottomNavigationView.setOnItemSelectedListener { item ->
             NavigationHelper.handleNavigation(this, item.itemId)
         }
-
-
     }
 
     private fun onClickConnectPpgEcg(view: View) {
@@ -140,7 +128,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
 
     private fun onClickConnectHr(view: View) {
         checkBT()
@@ -159,7 +146,7 @@ class MainActivity : AppCompatActivity() {
         showDialog(view)
     }
 
-    //    dialog修改过使用了MaterialAlertDialogBuilder
+    // use MaterialAlertDialogBuilder to show dialog
     private fun showDialog(view: View) {
         MaterialAlertDialogBuilder(this)
             .setTitle("Enter your Polar device's ID")
@@ -173,7 +160,6 @@ class MainActivity : AppCompatActivity() {
             .setNegativeButton("Cancel", null) // Dismiss dialog
             .show()
     }
-
 
     private fun checkBT(): Boolean {
         val btManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
@@ -190,8 +176,9 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
+    //launchDeviceListActivity to show the previously connected devices list
     private fun launchDeviceListActivity() {
-        val intent = Intent(this, DeviceListActivity::class.java)
+        val intent = Intent(this, BLEScanActivity::class.java)
         selectDeviceLauncher.launch(intent)
     }
 
@@ -215,6 +202,7 @@ class MainActivity : AppCompatActivity() {
         toast.show()
     }
 
+    //save the deviceID
     private fun saveDeviceId(deviceId: String) {
         val existingIds = sharedPreferences.getStringSet(SHARED_PREFS_KEY, setOf()) ?: setOf()
         val updatedIds = existingIds.toMutableSet()
@@ -222,17 +210,19 @@ class MainActivity : AppCompatActivity() {
         sharedPreferences.edit().putStringSet(SHARED_PREFS_KEY, updatedIds).apply()
     }
 
+    //remove a deviceID from the previously connected devices list
     private fun removeDeviceId(deviceId: String) {
         val deviceIds = getStoredDeviceIds().toMutableSet()
         deviceIds.remove(deviceId)
         sharedPreferences.edit().putStringSet(SHARED_PREFS_KEY, deviceIds).apply()
     }
 
-
+    //get the previously connected deviceIDs from sharedPreferences
     private fun getStoredDeviceIds(): Set<String> {
         return sharedPreferences.getStringSet(SHARED_PREFS_KEY, emptySet()) ?: emptySet()
     }
 
+    //display the previously connected devices list
     private fun displayDeviceIds() {
         val deviceIds = getStoredDeviceIds().toList()
 
@@ -250,7 +240,6 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent)
             }
         })
-
         val listView = findViewById<ListView>(R.id.device_id_list)
         listView.adapter = adapter
     }

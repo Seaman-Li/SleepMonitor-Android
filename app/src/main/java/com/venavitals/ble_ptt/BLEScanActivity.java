@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DeviceListActivity extends Activity {
+public class BLEScanActivity extends Activity {
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeScanner bluetoothLeScanner;
     private TextView mEmptyList;
@@ -43,7 +43,7 @@ public class DeviceListActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.layout_device_list);  // 使用你的布局文件
+        setContentView(R.layout.layout_device_list);
         mEmptyList = findViewById(R.id.empty);
         if (mEmptyList == null) {
             Log.e(TAG, "TextView with id 'empty' not found!");

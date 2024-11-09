@@ -70,7 +70,7 @@
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait" />
 
-        <activity android:name=".DeviceListActivity"
+        <activity android:name=".BLEScanActivity"
             android:exported="false"
             android:label="@string/hr_name"
             android:parentActivityName=".MainActivity"/>
