@@ -56,17 +56,25 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".ECGActivity"
             android:exported="false"
             android:label="@string/ecg_name"
             android:parentActivityName=".MainActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:screenOrientation="portrait" />
+
         <activity
             android:name=".HRActivity"
             android:exported="false"
             android:label="@string/hr_name"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait" />
+
+        <activity android:name=".BLEScanActivity"
+            android:exported="false"
+            android:label="@string/hr_name"
+            android:parentActivityName=".MainActivity"/>
     </application>
 </manifest>

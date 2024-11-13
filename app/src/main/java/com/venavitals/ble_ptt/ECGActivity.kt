@@ -1,11 +1,16 @@
 package com.venavitals.ble_ptt
 
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.androidplot.xy.BoundaryMode
 import com.androidplot.xy.StepMode
 import com.androidplot.xy.XYPlot
@@ -39,7 +44,7 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
     companion object {
         private const val TAG = "ECGActivity"
     }
-
+    private var isFullScreen = false //标记是否为全屏模式
     private lateinit var api: PolarBleApi
     private lateinit var textViewHR: TextView
     private lateinit var textViewRR: TextView
@@ -53,6 +58,7 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
     private lateinit var ecgPlot: XYPlot
     private lateinit var ppgPlotter: EcgPlotter
     private lateinit var ecgPlotter: EcgPlotter
+    private lateinit var fullScreenButton: Button;
     private var ppgDisposable: Disposable? = null
     private var hrDisposable: Disposable? = null
 
@@ -99,6 +105,18 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_ecg)
+
+        // 注册保存数据的回调
+        NavigationHelper.saveDataCallback = {
+            showSaveDialog()
+        }
+        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        bottomNavigationView.selectedItemId = R.id.navigation_chart  // 设置当前选中项为 chart
+        // 设置底部导航的监听器
+        bottomNavigationView.setOnItemSelectedListener { item ->
+            NavigationHelper.handleNavigation(this, item.itemId)
+        }
+
         // 尝试从 Intent 获取 deviceId
         ppgDeviceId = intent.getStringExtra("id").toString()
         Log.d(TAG, "ECGActivity received deviceId: $ppgDeviceId")
@@ -122,9 +140,23 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
         textViewSignalInfo = findViewById(R.id.sinfo)
         ppgPlot = findViewById(R.id.plot)
         ecgPlot = findViewById(R.id.ecg_plot)
+        fullScreenButton = findViewById<Button>(R.id.fullscreen_button)
 
-
-
+        // 点击按钮切换全屏显示
+        fullScreenButton.setOnClickListener {
+            if (!isFullScreen) {
+                // 切换到横屏模式
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                enterFullScreenMode()
+                fullScreenButton.text = "Return"  // 修改按钮文本为"Return"
+            } else {
+                // 切换回竖屏模式
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                exitFullScreenMode()
+                fullScreenButton.text = "Fullscreen"  // 修改按钮文本回"Fullscreen"
+            }
+            isFullScreen = !isFullScreen
+        }
 
         api = defaultImplementation(
             applicationContext,
@@ -229,7 +261,6 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
         ppgPlot.linesPerRangeLabel = 2
 //        ppgPlot.graph.setMargins(-1000f,0f,0f,0f)
 
-
         ecgPlotter = EcgPlotter("ECG", ecgSR)
         ecgPlotter.setListener(this)
         ecgPlot.addSeries(ecgPlotter.getSeries(), ecgPlotter.formatter)
@@ -241,39 +272,6 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
 //        ecgPlot.graph.setMargins(-1000f,0f,0f,0f)
 
 
-//        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
-//        bottomNavigationView.selectedItemId = R.id.navigation_chart
-//        bottomNavigationView.setOnItemSelectedListener { item ->
-//            when (item.itemId) {
-//                R.id.navigation_connect -> {
-//                    // Navigate to MainActivity
-//                    startActivity(Intent(this, MainActivity::class.java))
-//                    true
-//                }
-//                R.id.navigation_chart -> {
-//                    // Stay in ECGActivity
-//                    true
-//                }
-//                R.id.navigation_user -> {
-//                    // Placeholder for future user activity
-//                    true
-//                }
-//                R.id.navigation_settings -> {
-//                    // Placeholder for future settings activity
-//                    true
-//                }
-//                else -> false
-//            }
-//        }
-
-        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
-        bottomNavigationView.selectedItemId = R.id.navigation_chart  // 设置选中的项为 chart
-
-        val deviceId = intent.getStringExtra("id")
-
-        bottomNavigationView.setOnItemSelectedListener { item ->
-            NavigationHelper.handleNavigation(this, item.itemId, deviceId)
-        }
 
     }
 
@@ -289,6 +287,24 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
         api.shutDown()
 
 
+    }
+
+    fun showSaveDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Save Data")
+            .setMessage("Do you want to save the ECG/PPG data before exiting?")
+            .setPositiveButton("Save") { _, _ ->
+                saveData()
+                finish();//结束ECGActivity
+            }
+            .setNegativeButton("Don't Save") { _, _ ->
+                finish();
+            }
+            .setNeutralButton("Cancel", null)  // 不进行任何操作，只关闭对话框
+            .show()
+    }
+
+    private fun saveData() {
 //        path = Environment.getExternalStorageDirectory().toString();
         val sdf = SimpleDateFormat("yyyy_MM_dd_HH:mm:ss")
         val resultdate = Date(System.currentTimeMillis())
@@ -298,14 +314,17 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
 //        for(sample in ppgSamples){
 //            sample.timestamp=polarTimestamp2UnixTimestamp(sample.timestamp)
 //        }
-
-
         Utils.saveSamples(ecgSamples,path,sdf.format(resultdate)+"_ecg_samples_"+ecgSR+".txt")
         Utils.saveSamples(ppgSamples,path,sdf.format(resultdate)+"_ppg_samples_"+ppgSR+".txt")
         Utils.saveSamples(hrSamples,path,sdf.format(resultdate)+"_hr_samples_"+ecgSR+".txt")
         Utils.saveSamples(pttSamples,path,sdf.format(resultdate)+"_ptt_samples_"+ppgSR+".txt")
         Utils.saveValueSamples(ecgFilteredSamples,path,sdf.format(resultdate)+"_ecg_filtered_samples_"+ecgSR+".txt")
         Utils.saveValueSamples(ppgFilteredSamples,path,sdf.format(resultdate)+"_ppg_filtered_samples_"+ppgSR+".txt")
+    }
+
+    // 在点击手机底部的退出按钮时弹出是否保存保存对话框
+    override fun onBackPressed() {
+        showSaveDialog()
     }
 
 
@@ -530,12 +549,151 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
 
     }
 
-//    override fun onResume() {
-//        super.onResume()
+
+    // 进入全屏模式，隐藏除图表外的所有控件
+    private fun enterFullScreenMode() {
+        // Hide status bar
+        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
+        actionBar?.hide()
+
+        // 隐藏其他控件
+        findViewById<View>(R.id.ecgViewHeading).visibility = View.GONE
+        findViewById<View>(R.id.hr).visibility = View.GONE
+        findViewById<View>(R.id.rr).visibility = View.GONE
+        findViewById<View>(R.id.info).visibility = View.GONE
+        findViewById<View>(R.id.bottom_navigation).visibility = View.GONE
+
+        val ppgPlot = findViewById<XYPlot>(R.id.plot)
+        val ecgPlot = findViewById<XYPlot>(R.id.ecg_plot)
+
+        // 使用ConstraintLayout的实际高度来分配空间给XYPlot
+        val constraintLayout = findViewById<ConstraintLayout>(R.id.ECGActivity_layout)
+        val containerHeight = constraintLayout.width
+
+        val plotParams = ConstraintLayout.LayoutParams(
+            ConstraintLayout.LayoutParams.MATCH_CONSTRAINT,
+            dpToPx(150)
+        ).apply {
+            topToTop = ConstraintLayout.LayoutParams.PARENT_ID
+            bottomToTop = ecgPlot.id
+            startToStart = ConstraintLayout.LayoutParams.PARENT_ID
+            endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+            topMargin = dpToPx(5)
+//            verticalWeight = 1.0f  // 使用权重分配高度
+        }
+
+        val ecgPlotParams = ConstraintLayout.LayoutParams(
+            ConstraintLayout.LayoutParams.MATCH_CONSTRAINT,
+            dpToPx(120)
+        ).apply {
+            topToBottom = ppgPlot.id
+            bottomToTop = R.id.fullscreen_button
+            startToStart = ConstraintLayout.LayoutParams.PARENT_ID
+            endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+            topMargin = dpToPx(10)  // 增加间距
+//            verticalWeight = 1.0f
+        }
+
+        ppgPlot.layoutParams = plotParams
+        ecgPlot.layoutParams = ecgPlotParams
+    }
+
+    // 功能：将dp单位转换为px单位
+    private fun dpToPx(dp: Int): Int {
+        val density = resources.displayMetrics.density
+        return (dp * density).toInt()
+    }
+
+    // 更新退出全屏模式的代码
+    private fun exitFullScreenMode() {
+        // Show status bar
+        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+        actionBar?.show()
+        // 恢复其他控件的可见性
+        findViewById<View>(R.id.ecgViewHeading).visibility = View.VISIBLE
+        findViewById<View>(R.id.hr).visibility = View.VISIBLE
+        findViewById<View>(R.id.rr).visibility = View.VISIBLE
+        findViewById<View>(R.id.info).visibility = View.VISIBLE
+        findViewById<View>(R.id.bottom_navigation).visibility = View.VISIBLE
+
+        val plot = findViewById<XYPlot>(R.id.plot)
+        val ecgPlot = findViewById<XYPlot>(R.id.ecg_plot)
+
+        // 设置原始布局参数，高度和边距都转换为像素
+        val plotParams = ConstraintLayout.LayoutParams(
+            ConstraintLayout.LayoutParams.MATCH_CONSTRAINT,
+            dpToPx(150)  // 转换高度值
+        ).apply {
+            bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
+            startToStart = ConstraintLayout.LayoutParams.PARENT_ID
+            endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+            bottomMargin = dpToPx(264)  // 转换底部边距
+        }
+
+        val ecgPlotParams = ConstraintLayout.LayoutParams(
+            ConstraintLayout.LayoutParams.MATCH_CONSTRAINT,
+            dpToPx(100)  // 转换高度值
+        ).apply {
+            topToBottom = R.id.plot
+            startToStart = ConstraintLayout.LayoutParams.PARENT_ID
+            endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+            topMargin = dpToPx(4)  // 转换顶部边距
+        }
+
+        plot.layoutParams = plotParams
+        ecgPlot.layoutParams = ecgPlotParams
+    }
+
+//    fun enterFullScreenMode() {
+//        // 隐藏除图表和全屏按钮以外的所有视图
+//        textViewHR.visibility = View.GONE
+//        textViewRR.visibility = View.GONE
+//        textViewDeviceId.visibility = View.GONE
+//        textViewBattery.visibility = View.GONE
+//        textViewFwVersion.visibility = View.GONE
+//        textViewPtt.visibility = View.GONE
+//        textViewInfo.visibility = View.GONE
+//        textViewSignalInfo.visibility = View.GONE
+////        ecgViewHeading.visibility = View.GONE
 //
-//        // 设置导航栏的选中状态为chart
-//        val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
-//        bottomNavigationView.selectedItemId = R.id.navigation_chart
+//        // 设置图表和全屏按钮的布局参数以填充屏幕
+//        val params = ConstraintLayout.LayoutParams(
+//            ConstraintLayout.LayoutParams.MATCH_PARENT,
+//            ConstraintLayout.LayoutParams.MATCH_PARENT
+//        ).apply {
+//            // 这里假设全屏按钮放在底部，两个图表分别占据屏幕的上半部和中间部分
+//            topToTop = ConstraintLayout.LayoutParams.PARENT_ID
+//            bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
+//        }
+//
+//        // 应用参数到图表和按钮
+//        ppgPlot.layoutParams = params
+//        ecgPlot.layoutParams = params
+//        fullScreenButton.layoutParams = ConstraintLayout.LayoutParams(
+//            ConstraintLayout.LayoutParams.MATCH_PARENT,
+//            ConstraintLayout.LayoutParams.WRAP_CONTENT
+//        ).apply {
+//            // 设置按钮位于底部
+//            bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
+//        }
+//    }
+//
+//    fun exitFullScreenMode() {
+//        // 恢复所有视图的可见性
+//        textViewHR.visibility = View.VISIBLE
+//        textViewRR.visibility = View.VISIBLE
+//        textViewDeviceId.visibility = View.VISIBLE
+//        textViewBattery.visibility = View.VISIBLE
+//        textViewFwVersion.visibility = View.VISIBLE
+//        textViewPtt.visibility = View.VISIBLE
+//        textViewInfo.visibility = View.VISIBLE
+//        textViewSignalInfo.visibility = View.VISIBLE
+////        ecgViewHeading.visibility = View.VISIBLE
+//
+//        // 使用 findViewById 重新绑定 XML 中定义的布局参数
+//        ppgPlot.layoutParams = findViewById<ConstraintLayout>(R.id.plot).layoutParams
+//        ecgPlot.layoutParams = findViewById<ConstraintLayout>(R.id.ecg_plot).layoutParams
+//        fullScreenButton.layoutParams = findViewById<Button>(R.id.fullscreen_button).layoutParams
 //    }
 
 

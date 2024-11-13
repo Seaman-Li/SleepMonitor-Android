@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--首页中点击scan按钮跳出的设备列表搜索页面即layout_device_list.xml列表的每个列表元素的样式-->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="6dp"
+    android:textColor="@color/black"
+    >
+
+    <TextView
+        android:id="@+id/paired"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+
+        android:textSize="12dp" />
+<!--    android:text="@string/paired"-->
+
+    <TextView
+        android:id="@+id/rssi"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+
+        android:textSize="12dp" />
+    <!--        android:layout_below="@+id/paired"-->
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:textSize="14dp" />
+
+    <TextView
+        android:id="@+id/address"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/name"
+        android:textSize="10dp" />
+
+</RelativeLayout>
