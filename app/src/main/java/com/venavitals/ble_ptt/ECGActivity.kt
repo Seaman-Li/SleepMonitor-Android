@@ -7,6 +7,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.androidplot.xy.BoundaryMode
 import com.androidplot.xy.StepMode
@@ -207,6 +208,20 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
             finish()
             return
         }
+
+        // 注册保存数据的回调
+        NavigationHelper.saveDataCallback = {
+            showSaveDialog()
+        }
+        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        bottomNavigationView.selectedItemId = R.id.navigation_chart  // 设置当前选中项为 chart
+        // 设置底部导航的监听器
+        bottomNavigationView.setOnItemSelectedListener { item ->
+            NavigationHelper.handleNavigation(this, item.itemId)
+        }
+
+
+
         textViewHR = findViewById(R.id.hr)
         textViewRR = findViewById(R.id.rr)
         textViewDeviceId = findViewById(R.id.deviceId)
@@ -333,56 +348,25 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
         ecgPlot.linesPerRangeLabel = 2
 //        ecgPlot.graph.setMargins(-1000f,0f,0f,0f)
 
-
-//        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
-//        bottomNavigationView.selectedItemId = R.id.navigation_chart
-//        bottomNavigationView.setOnItemSelectedListener { item ->
-//            when (item.itemId) {
-//                R.id.navigation_connect -> {
-//                    // Navigate to MainActivity
-//                    startActivity(Intent(this, MainActivity::class.java))
-//                    true
-//                }
-//                R.id.navigation_chart -> {
-//                    // Stay in ECGActivity
-//                    true
-//                }
-//                R.id.navigation_user -> {
-//                    // Placeholder for future user activity
-//                    true
-//                }
-//                R.id.navigation_settings -> {
-//                    // Placeholder for future settings activity
-//                    true
-//                }
-//                else -> false
-//            }
-//        }
-
-        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
-        bottomNavigationView.selectedItemId = R.id.navigation_chart  // 设置选中的项为 chart
-
-        val deviceId = intent.getStringExtra("id")
-
-        bottomNavigationView.setOnItemSelectedListener { item ->
-            NavigationHelper.handleNavigation(this, item.itemId, deviceId)
-        }
-
     }
 
-    public override fun onDestroy() {
-        super.onDestroy()
+    fun showSaveDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Save Data")
+            .setMessage("Do you want to save the ECG/PPG data before exiting?")
+            .setPositiveButton("Save") { _, _ ->
+                saveData()
+                finish();//结束ECGActivity
+            }
+            .setNegativeButton("Don't Save") { _, _ ->
+                finish();
+            }
+            .setNeutralButton("Cancel", null)  // 不进行任何操作，只关闭对话框
+            .show()
+    }
 
-        uart.shutdown()
-        unbindService(uart.mServiceConnection)
-
-        ppgDisposable?.let {
-            if (!it.isDisposed) it.dispose()
-        }
-        api.shutDown()
-
-
-//        path = Environment.getExternalStorageDirectory().toString();
+    private fun saveData(){
+        //        path = Environment.getExternalStorageDirectory().toString();
         val sdf = SimpleDateFormat("yyyy_MM_dd_HH:mm:ss")
         val resultdate = Date(System.currentTimeMillis())
         val path = getExternalFilesDir(null).toString()+"/"+sdf.format(resultdate);
@@ -402,6 +386,27 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
 
         Utils.useThreadToSendFile(path+"/"+sdf.format(resultdate)+"_ecg_samples_"+ecgSR+".txt")
         Utils.useThreadToSendFile(path+"/"+sdf.format(resultdate)+"_ppg_samples_"+ppgSR+".txt")
+    }
+
+    // 在点击手机底部的退出按钮时弹出是否保存保存对话框
+    override fun onBackPressed() {
+        showSaveDialog()
+    }
+
+
+    public override fun onDestroy() {
+        super.onDestroy()
+
+        uart.shutdown()
+        unbindService(uart.mServiceConnection)
+
+        ppgDisposable?.let {
+            if (!it.isDisposed) it.dispose()
+        }
+        api.shutDown()
+
+
+
     }
 
 
@@ -659,13 +664,6 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
 
     }
 
-//    override fun onResume() {
-//        super.onResume()
-//
-//        // 设置导航栏的选中状态为chart
-//        val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
-//        bottomNavigationView.selectedItemId = R.id.navigation_chart
-//    }
 
 
 }
